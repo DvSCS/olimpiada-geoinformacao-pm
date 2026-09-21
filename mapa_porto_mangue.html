@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIG - Porto do Mangue</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background-color: #f4f4f4;
+        }
+        #map {
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .top-bar {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 8px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            z-index: 1000;
+            font-size: 13px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #ccc;
+        }
+        .top-bar select {
+            border: none;
+            background: #f9f9f9;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            color: #555;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+
+        .info.legend {
+            background: white;
+            padding: 10px 15px;
+            border-radius: 2px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            font-size: 12px;
+            color: #333;
+            line-height: 1.8;
+            border: 1px solid #aaa;
+        }
+        .legend h4 {
+            margin: 0 0 5px 0;
+            font-size: 12px;
+            font-weight: bold;
+            color: #000;
+        }
+        .legend i {
+            width: 14px;
+            height: 14px;
+            float: left;
+            margin-right: 8px;
+            opacity: 0.6;
+            border: 1px solid #666;
+        }
+
+        .qgis-label {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            color: #222;
+            font-family: Arial, sans-serif;
+            font-weight: bold;
+            font-size: 11px;
+            text-transform: uppercase;
+            text-align: center;
+            white-space: nowrap; 
+            text-shadow: 
+                -1.5px -1.5px 0 #fff,  
+                 1.5px -1.5px 0 #fff,
+                -1.5px  1.5px 0 #fff,
+                 1.5px  1.5px 0 #fff,
+                 0px    2px   0 #fff,
+                 2px    0px   0 #fff,
+                 0px   -2px   0 #fff,
+                -2px    0px   0 #fff;
+        }
+        .qgis-label::before { display: none; }
+        
+        .arrow-label {
+            color: #c0392b;
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="top-bar">
+        <span><b>SIG WEB</b></span>
+        <span style="color:#ccc;">|</span>
+        <span>Município: <b>Porto do Mangue (RN)</b></span>
+        <span style="color:#ccc;">|</span>
+        <select>
+            <option>Camada ativa: Rede de esgoto e saneamento</option>
+            <option>Rede hidrográfica</option>
+            <option>Rede de transporte e mobilidade urbana</option>
+            <option>Rede de áreas verdes/lazer</option>
+            <option>Rede de drenagem urbana</option>
+            <option>Rede de abastecimento de água</option>
+            <option>Rede de saúde</option>
+        </select>
+    </div>
+
+    <div id="map"></div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://unpkg.com/leaflet-polylinedecorator@1.6.0/dist/leaflet.polylineDecorator.js"></script>
+
+    <script>
+        var map = L.map('map', {
+            zoomControl: false 
+        }).setView([-5.066, -36.776], 15);
+
+        L.control.zoom({ position: 'topright' }).addTo(map);
+        L.control.scale({position: 'bottomright', metric: true, imperial: false}).addTo(map);
+
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
+            attribution: 'IBGE | SIG-RN | Base: Esri'
+        }).addTo(map);
+
+        // Polígono Urbano (Puxado do rio e readicionando o bairro do norte)
+        var urbanCoords = [
+            [-5.0615, -36.7730], // Topo do bairro norte (ponta NE)
+            [-5.0615, -36.7755], // Curva do bairro norte
+            [-5.0635, -36.7770], // Desce pra conectar com a cidade
+            [-5.0650, -36.7790], // Curva pro oeste
+            
+            // Puxadinho azul no extremo oeste
+            [-5.0630, -36.7845], 
+            [-5.0645, -36.7870], 
+            [-5.0665, -36.7850], 
+            
+            [-5.0675, -36.7830], // Volta pra cidade
+            [-5.0700, -36.7825], // SW corner
+            [-5.0715, -36.7785], // Ponta Sul
+            
+            // Borda Leste (puxada pra dentro, sem vazar pro rio)
+            [-5.0690, -36.7785],
+            [-5.0670, -36.7780],
+            [-5.0640, -36.7765], // Conecta de volta no bairro do norte
+            [-5.0625, -36.7745]
+        ];
+        L.polygon(urbanCoords, {
+            color: '#8e44ad',
+            fillColor: '#9b59b6',
+            fillOpacity: 0.45,
+            weight: 1.5
+        }).addTo(map);
+
+        // Polígono Manguezal
+        var mangueCoords = [
+            [-5.0640, -36.7745],
+            [-5.0630, -36.7700],
+            [-5.0645, -36.7665],
+            [-5.0690, -36.7660],
+            [-5.0730, -36.7680],
+            [-5.0745, -36.7735],
+            [-5.0705, -36.7750],
+            [-5.0670, -36.7745]
+        ];
+        L.polygon(mangueCoords, {
+            color: '#27ae60', 
+            fillColor: '#2ecc71',
+            fillOpacity: 0.35,
+            weight: 1.5
+        }).addTo(map);
+
+        // Vetor de Poluição
+        var flowLine = L.polyline([
+            [-5.0685, -36.7770], 
+            [-5.0690, -36.7740]  
+        ], {
+            color: '#c0392b',
+            weight: 2,
+            dashArray: '4, 4'
+        }).addTo(map);
+
+        L.polylineDecorator(flowLine, {
+            patterns: [
+                {offset: '100%', repeat: 0, symbol: L.Symbol.arrowHead({pixelSize: 10, polygon: true, pathOptions: {color: '#c0392b', fillOpacity: 1, weight: 0}})}
+            ]
+        }).addTo(map);
+
+        // Labels
+        L.marker([-5.0675, -36.7800], {icon: L.divIcon({className: 'qgis-label', html: '<div style="margin-left:-30px;">ZONA URBANA<br><span style="font-size:9px;font-weight:normal;">Sede Municipal</span></div>'})}).addTo(map);
+        L.marker([-5.0690, -36.7700], {icon: L.divIcon({className: 'qgis-label', html: '<div style="margin-left:-30px;">ZONA ESTUARINA<br><span style="font-size:9px;font-weight:normal;">Rio Piranhas-Açu</span></div>'})}).addTo(map);
+        L.marker([-5.0690, -36.7755], {icon: L.divIcon({className: 'qgis-label arrow-label', html: '<div style="margin-left:-40px; margin-top:10px;">Fluxo de Efluentes</div>'})}).addTo(map);
+
+        // Legenda
+        var legend = L.control({position: 'bottomleft'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML += '<h4>Legenda</h4>';
+            div.innerHTML += '<i style="background: #9b59b6; border-color: #8e44ad;"></i> Área Densamente Ocupada<br>';
+            div.innerHTML += '<i style="background: #2ecc71; border-color: #27ae60;"></i> Ecossistema de Manguezal<br>';
+            div.innerHTML += '<i style="background: transparent; border-top: 2px dashed #c0392b; height: 0; margin-top: 6px;"></i> Lançamento de Esgoto<br>';
+            return div;
+        };
+        legend.addTo(map);
+    </script>
+</body>
+</html>

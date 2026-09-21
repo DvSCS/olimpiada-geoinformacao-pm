@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infográfico 9:16 - Saneamento</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { 
+            font-family: 'Kalam', cursive; 
+            background-color: #2c3e50;
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 40px 0;
+            margin: 0; 
+        }
+        .poster { 
+            background-color: #fdfbf7; 
+            background-image: 
+                linear-gradient(#e1e4e8 1px, transparent 1px),
+                linear-gradient(90deg, #e1e4e8 1px, transparent 1px);
+            background-size: 15px 15px;
+            
+            width: 900px; 
+            min-height: 1600px; 
+            
+            padding: 60px 40px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            text-align: center; 
+            position: relative;
+            box-sizing: border-box;
+            border-top: 8px solid #d35400;
+        }
+        
+        .header-section {
+            border-bottom: 2px dashed #bdc3c7;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        
+        h1 { color: #2c3e50; font-size: 42px; margin-bottom: 10px; font-weight: 700; line-height: 1.1;}
+        h2 { color: #e67e22; font-size: 22px; margin-bottom: 10px; font-weight: 700; }
+        h3 { color: #7f8c8d; font-size: 16px; margin: 0; font-weight: 400; }
+        
+        .mermaid { font-size: 16px; margin-top: 10px; display: flex; justify-content: center;}
+        
+        .download-btn {
+            background-color: #d35400;
+            color: white;
+            border: 2px solid #fff;
+            padding: 15px 40px;
+            font-size: 22px;
+            font-weight: 700;
+            font-family: 'Kalam', cursive;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 40px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+        }
+        .download-btn:hover {
+            transform: translateY(-5px);
+            background-color: #e67e22;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="poster" id="diagram-container">
+        
+        <div class="header-section">
+            <h1>INFOGRÁFICO DE ENGENHARIA</h1>
+            <h2>ARQUITETURA DE SANEAMENTO CIBERFÍSICO</h2>
+            <h3>Escala de Projeto: Município de Porto do Mangue / RN | Modelo: Integração Geotech, NbS e IoT</h3>
+        </div>
+        
+        <div class="mermaid">
+            %%{init: {"look": "handDrawn", "theme": "base", "themeVariables": {"fontFamily": "Kalam, cursive", "primaryColor": "#ffffff", "edgeLabelBackground": "#ffffff"}}}%%
+            graph TD
+            
+            classDef hard fill:#e8f4f8,stroke:#2980b9,stroke-width:2px;
+            classDef soft fill:#f9ebea,stroke:#c0392b,stroke-width:2px;
+            classDef inf fill:#fef9e7,stroke:#f39c12,stroke-width:2px;
+            classDef bio fill:#e9f7ef,stroke:#27ae60,stroke-width:2px;
+            classDef iot fill:#f4ecf7,stroke:#8e44ad,stroke-width:2px;
+
+            subgraph f1 [1. AQUISIÇÃO GEOESPACIAL]
+                A1("VANTs (Drones)"):::hard
+                A2("Sensores LiDAR Embarcados"):::hard
+                A3("Constelação Sentinel-1 e 2"):::hard
+                A1 -->|"Levantamento Óptico"| A2
+                A3 -.->|"Radar SAR"| A2
+            end
+
+            subgraph f2 [2. PROCESSAMENTO TOPOLÓGICO]
+                B1[["Nuvem de Pontos 3D"]]:::soft
+                B2[["Filtragem de Solo Nua"]]:::soft
+                B3[["M.D.E. (Modelo Digital de Elevação)"]]:::soft
+                A2 -->|"Triangulação"| B1
+                B1 --> B2
+                B2 --> B3
+            end
+
+            subgraph f3 [3. INFRAESTRUTURA HÍBRIDA]
+                C1{"Bacias de Contribuição Urbana"}:::inf
+                C2("Rede Interceptora Domiciliar"):::inf
+                C3{"Fluxo 100% por Gravidade"}:::inf
+                C4("Caixas de Inspeção e Poços de Visita"):::inf
+                
+                B3 -->|"Otimização de Declividade"| C1
+                C1 --> C2
+                C2 --> C3
+                C3 --> C4
+            end
+
+            subgraph f4 [4. SOLUÇÕES BASEADAS NA NATUREZA]
+                D1[["Wetlands Construídas (Filtros Verdes)"]]:::bio
+                D2("Decantação Primária de Sólidos"):::bio
+                D3("Zona de Fitorremediação (Macrófitas)"):::bio
+                D4("Absorção de Fósforo e Nitrogênio"):::bio
+                
+                C4 -->|"Descarte Inicial"| D1
+                D1 --> D2
+                D2 --> D3
+                D3 --> D4
+            end
+
+            subgraph f5 [5. ECOLOGIA E TELEMETRIA IoT]
+                E1("Deságue de Efluente Purificado"):::bio
+                E2{"Estuário do Rio Piranhas-Açu"}:::bio
+                E3(("Sensores IoT Submersos")):::iot
+                E4["Gêmeo Digital (WebGIS Dashboard)"]:::iot
+                
+                D4 -->|"Água Limpa (Padrão CONAMA)"| E1
+                E1 --> E2
+                E2 -.->|"Leitura de OD, pH e Turbidez"| E3
+                E3 -.->|"Telemetria 5G e LoRa"| E4
+            end
+            
+            subgraph f6 [6. IMPACTO SOCIOECONÔMICO]
+                F1(("Recuperação do Berçário de Crustáceos")):::soft
+                F2(("Zerar Doenças de Veiculação Hídrica")):::soft
+                F3(("Segurança Alimentar p/ Pescadores")):::soft
+                
+                E2 --> F1
+                E4 -.->|"Governança Preditiva"| F2
+                F1 --> F3
+                F2 --> F3
+            end
+        </div>
+    </div>
+
+    <button class="download-btn" onclick="baixarDiagrama()">DOWNLOAD DO PÔSTER 9:16 (PNG)</button>
+
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+        
+        mermaid.initialize({ startOnLoad: true });
+
+        window.baixarDiagrama = function() {
+            const container = document.getElementById('diagram-container');
+            const btn = document.querySelector('.download-btn');
+            
+            btn.innerHTML = 'GERANDO PÔSTER...';
+            
+            html2canvas(container, {
+                backgroundColor: '#2c3e50', 
+                scale: 2 
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'infografico_vertical_porto_mangue.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                btn.innerHTML = 'DOWNLOAD DO PÔSTER 9:16 (PNG)';
+            });
+        };
+    </script>
+</body>
+</html>
